@@ -126,10 +126,22 @@ def load_openai_client():
     Load OpenAI client (cached to avoid multiple initializations)
     Make sure to set OPENAI_API_KEY environment variable
     """
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = None
+
+    # 1) Streamlit Cloud / secrets.toml
+    try:
+        api_key = st.secrets.get("OPENAI_API_KEY", None)
+    except Exception:
+        api_key = None
+
+    # 2) Local env var fallback
     if not api_key:
-        st.warning("OpenAI API key not found. Please set OPENAI_API_KEY environment variable.")
+        api_key = os.getenv("OPENAI_API_KEY")
+
+    if not api_key:
+        st.warning("OpenAI API key not found. Please set OPENAI_API_KEY (Streamlit Secrets or env var).")
         return None
+
     return OpenAI(api_key=api_key)
 
 
